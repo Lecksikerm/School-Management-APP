@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -34,5 +35,14 @@ export class StudentsController {
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
   findOne(@Param('id') id: string) {
     return this.studentsService.findOne(id);
+  }
+
+  @Patch(':id/enroll')
+  @Roles(UserRole.ADMIN)
+  enrollInClass(
+    @Param('id') id: string,
+    @Body('classId') classId: string,
+  ) {
+    return this.studentsService.enrollInClass(id, classId);
   }
 }

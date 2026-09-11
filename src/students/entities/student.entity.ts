@@ -3,11 +3,13 @@ import {
   PrimaryGeneratedColumn,
   Column,
   OneToOne,
+  ManyToOne,
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
+import { Class } from '../../classes/entities/class.entity';
 
 @Entity('students')
 export class Student {
@@ -32,6 +34,9 @@ export class Student {
 
   @Column({ nullable: true })
   guardianPhone: string;
+
+  @ManyToOne(() => Class, { nullable: true, onDelete: 'SET NULL' })
+  class: Class;
 
   @CreateDateColumn()
   createdAt: Date;
