@@ -1,16 +1,23 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Student } from './entities/student.entity';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UsersService } from '../users/users.service';
 import { UserRole } from '../users/entities/user.entity';
+import { Class } from '../classes/entities/class.entity';
 
 @Injectable()
 export class StudentsService {
   constructor(
     @InjectRepository(Student)
     private readonly studentsRepository: Repository<Student>,
+    @InjectRepository(Class)
+    private readonly classesRepository: Repository<Class>,
     private readonly usersService: UsersService,
   ) {}
 
@@ -49,13 +56,54 @@ export class StudentsService {
   }
 
   async findAll(): Promise<Student[]> {
-    return this.studentsRepository.find({ relations: { user: true } });
+    const students = await this.studentsRepository.find({
+      relations: { user: true, class: true },
+    });
+    return students.map((s) => this.stripPassword(s));
   }
 
-  async findOne(id: string): Promise<Student | null> {
-    return this.studentsRepository.findOne({
+  async findOne(id: string): Promise<Student> {
+    const student = await this.studentsRepository.findOne({
       where: { id },
-      relations: { user: true },
+      relations: { user: true, class: true },
     });
+    if (!student) {
+      throw new NotFoundException('Student not found');
+    }
+    return this.stripPassword(student);
+  }
+
+  async enrollInClass(studentId: string, classId: string) {
+    const student = await this.studentsRepository.findOne({
+      where: { id: studentId },
+      relations: { user: true, class: true },
+    });
+    if (!student) {
+      throw new NotFoundException('Student not found');
+    }
+
+    const targetClass = await this.classesRepository.findOne({
+      where: { id: classId },
+    });
+    if (!targetClass) {
+      throw new NotFoundException('Class not found');
+    }
+
+    student.class = targetClass;
+    const savedStudent = await this.studentsRepository.save(student);
+
+    return {
+      message: 'Student enrolled successfully',
+      student: this.stripPassword(savedStudent),
+    };
+  }
+
+  private stripPassword(student: Student): Student {
+    if (student.user) {
+      const { password: _password, ...safeUser } = student.user;
+      void _password;
+      student.user = safeUser as typeof student.user;
+    }
+    return student;
   }
 }
