@@ -14,12 +14,10 @@ export class AuthService {
 
   async register(createUserDto: CreateUserDto) {
     const user = await this.usersService.create(createUserDto);
-    const { password, ...safeUser } = user;
-    void password;
 
     return {
       message: 'User registered successfully',
-      user: safeUser,
+      user,
       access_token: this.generateToken(user.id, user.email, user.role),
     };
   }

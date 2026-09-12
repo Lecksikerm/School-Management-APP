@@ -14,12 +14,6 @@ export class UsersController {
   @Get()
   @Roles(UserRole.ADMIN)
   async findAll(@Query() paginationQuery: PaginationQueryDto) {
-    const { data, meta } = await this.usersService.findAll(paginationQuery);
-    const safeData = data.map(({ password, ...safeUser }) => {
-      void password;
-      return safeUser;
-    });
-
-    return { data: safeData, meta };
+    return this.usersService.findAll(paginationQuery);
   }
 }
