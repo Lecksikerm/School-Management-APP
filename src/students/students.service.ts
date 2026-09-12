@@ -46,20 +46,17 @@ export class StudentsService {
     });
 
     const savedStudent = await this.studentsRepository.save(student);
-    const { password: _password, ...safeUser } = savedStudent.user;
-    void _password;
 
     return {
       message: 'Student registered successfully',
-      student: { ...savedStudent, user: safeUser },
+      student: savedStudent,
     };
   }
 
   async findAll(): Promise<Student[]> {
-    const students = await this.studentsRepository.find({
+    return this.studentsRepository.find({
       relations: { user: true, class: true },
     });
-    return students.map((s) => this.stripPassword(s));
   }
 
   async findOne(id: string): Promise<Student> {
@@ -70,7 +67,7 @@ export class StudentsService {
     if (!student) {
       throw new NotFoundException('Student not found');
     }
-    return this.stripPassword(student);
+    return student;
   }
 
   async enrollInClass(studentId: string, classId: string) {
@@ -94,16 +91,7 @@ export class StudentsService {
 
     return {
       message: 'Student enrolled successfully',
-      student: this.stripPassword(savedStudent),
+      student: savedStudent,
     };
-  }
-
-  private stripPassword(student: Student): Student {
-    if (student.user) {
-      const { password: _password, ...safeUser } = student.user;
-      void _password;
-      student.user = safeUser as typeof student.user;
-    }
-    return student;
   }
 }
