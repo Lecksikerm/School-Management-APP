@@ -11,6 +11,7 @@ import { ClassesModule } from './classes/classes.module';
 import { SubjectsModule } from './subjects/subjects.module';
 import { AttendanceModule } from './attendance/attendance.module';
 import { GradesModule } from './grades/grades.module';
+import { AnnouncementsModule } from './announcements/announcements.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { GradesModule } from './grades/grades.module';
     SubjectsModule,
     AttendanceModule,
     GradesModule,
+    AnnouncementsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
